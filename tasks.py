@@ -1,6 +1,11 @@
+from conductor import Conductor
+
+
 def find_longest_track():
-    pass
+    conductor = Conductor()
+    return conductor.get_track_circuits()
 
 
 if __name__ == '__main__':
-    find_longest_track()
+    results = find_longest_track()
+    print(results)
