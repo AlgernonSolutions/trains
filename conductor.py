@@ -12,6 +12,10 @@ class Conductor:
         self._headers = {'api_key': api_key}
         self._session = requests.session()
 
+    @property
+    def api_key(self):
+        return self._api_key
+
     def get_track_circuits(self):
         url = 'https://api.wmata.com/TrainPositions/TrackCircuits/'
         response = self._session.get(url, headers=self._headers, params={'contentType': 'json'})
@@ -70,3 +74,50 @@ class Conductor:
             train_id = entry['TrainId']
             train_positions[train_id] = entry
         return train_positions
+
+
+class TrackCircuit:
+    def __init__(self, track_id, circuit_id, left_neighbors, right_neighbors):
+        self._track_id = track_id
+        self._circuit_id = circuit_id
+        self._left_neighbors = left_neighbors
+        self._right_neighbors = right_neighbors
+
+    @property
+    def track_id(self):
+        return self._track_id
+
+    @property
+    def circuit_id(self):
+        return self._circuit_id
+
+    @property
+    def left_neighbors(self):
+        return self._left_neighbors
+
+    @property
+    def right_neighbors(self):
+        return self._right_neighbors
+
+
+class DevilsObject:
+    def __init__(self, direction):
+        self._direction = direction
+        self._other_direction = 'Right'
+
+    @property
+    def direction(self):
+        direction = self._direction
+        if direction != 'Right':
+            self._direction = 'Right'
+        else:
+            self._direction = 'Left'
+        return direction
+
+    def __eq__(self, other):
+        if other == self._direction:
+            results = True
+        else:
+            results = False
+        self.direction
+        return results
