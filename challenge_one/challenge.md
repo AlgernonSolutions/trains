@@ -13,5 +13,6 @@ Just like your club invitation, you should keep your API key safe and secret. If
 to significant bills and even blacklisting.
 ## Process
 This series of challenges utilizes the WMATA API to collect and analyze train data. Accordingly, we will need to register ourselves with the WMATA API, https://developer.wmata.com/signup/.
-Provide an email address, and any other required information. When you have completed the process, you will be able to view your two keys. Let them alone for now, we will deal with them more later. 
+Provide an email address, and any other required information. When you have completed the process, you will be able to view your two keys. Navigate to the 
+PRODUCTS tab, then select SUBSCRIBE. Complete the last steps and bask in their randomly generated beauty. Let them alone for now, we will deal with them more later. 
 While you are on the WMATA website, take a peek at the API documentation. We will come back to this in depth, but feel free to get a preview now.
