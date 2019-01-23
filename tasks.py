@@ -1,5 +1,4 @@
-from conductor import Conductor, TrackCircuit, DevilsObject
-import networkx as nx
+from alg_objs.conductor import Conductor, TrackCircuit
 
 
 def find_longest_track():
@@ -21,10 +20,6 @@ def find_longest_track():
             new_circuit = TrackCircuit(circuit['Track'], circuit['CircuitId'], left_neighbors, right_neighbors)
             new_circuits.append(new_circuit)
     print(new_circuits)
-
-
-def graph_circuits(circuits):
-    G = nx.Graph()
 
 
 if __name__ == '__main__':

@@ -3,11 +3,22 @@ from time import sleep
 
 import requests
 
+from alg_objs.local_squirrel import SecretSquirrel
+
+
+def challenge_function(production_fn):
+    def wrapper(*args, **kwargs):
+        results = production_fn(*args, **kwargs)
+        if kwargs.get('raw', None) is True:
+            results = json.dumps(results)
+        return results
+    return wrapper
+
 
 class Conductor:
-    def __init__(self, api_key=None):
+    def __init__(self, api_key=None, **kwargs):
         if not api_key:
-            api_key = '1ea53d88753446d4b266fc065b1bd241'
+            api_key = SecretSquirrel.retrieve_credentials(**kwargs)
         self._api_key = api_key
         self._headers = {'api_key': api_key}
         self._session = requests.session()
@@ -16,7 +27,7 @@ class Conductor:
     def api_key(self):
         return self._api_key
 
-    def get_track_circuits(self):
+    def get_track_circuits(self, **kwargs):
         url = 'https://api.wmata.com/TrainPositions/TrackCircuits/'
         response = self._session.get(url, headers=self._headers, params={'contentType': 'json'})
         results = json.loads(response.content)
@@ -30,23 +41,24 @@ class Conductor:
             tracks[track_number][circuit_id] = circuit
         return tracks
 
-    def get_lines(self):
+    @challenge_function
+    def get_lines(self, **kwargs):
         url = 'https://api.wmata.com/Rail.svc/json/jLines'
-        google_homepage = requests.get(url, headers=self._headers)
-        results = (json.loads(google_homepage.content))
+        response = requests.get(url, headers=self._headers)
+        results = (json.loads(response.content))
         return results['Lines']
 
-    def get_stations(self, line_code):
+    def get_stations(self, line_code, **kwargs):
         url = 'https://api.wmata.com/Rail.svc/json/jStations'
         results = requests.get(url, params={'LineCode': line_code}, headers=self._headers)
         return json.loads(results.content)['Stations']
 
-    def get_station_parking_information(self, station_code):
+    def get_station_parking_information(self, station_code, **kwargs):
         url = 'https://api.wmata.com/Rail.svc/json/jStationParking'
         results = requests.get(url, params={'StationCode': station_code}, headers=self._headers)
         return json.loads(results.content)['StationsParking']
 
-    def get_station_lat_lon(self):
+    def get_station_lat_lon(self, **kwargs):
         pacer = 0
         station_locations = {}
         lines = self.get_lines()
@@ -64,7 +76,7 @@ class Conductor:
                 pacer += 1
         return station_locations
 
-    def get_train_positions(self):
+    def get_train_positions(self, **kwargs):
         url = 'https://api.wmata.com/TrainPositions/TrainPositions/'
         google_homepage = requests.get(url, headers=self._headers, params={'contentType': 'json'})
         results = (json.loads(google_homepage.content))
@@ -98,26 +110,3 @@ class TrackCircuit:
     @property
     def right_neighbors(self):
         return self._right_neighbors
-
-
-class DevilsObject:
-    def __init__(self, direction):
-        self._direction = direction
-        self._other_direction = 'Right'
-
-    @property
-    def direction(self):
-        direction = self._direction
-        if direction != 'Right':
-            self._direction = 'Right'
-        else:
-            self._direction = 'Left'
-        return direction
-
-    def __eq__(self, other):
-        if other == self._direction:
-            results = True
-        else:
-            results = False
-        self.direction
-        return results
