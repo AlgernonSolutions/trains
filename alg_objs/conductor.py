@@ -7,9 +7,9 @@ from alg_objs.local_squirrel import SecretSquirrel
 
 
 def challenge_function(production_fn):
-    def wrapper(*args, **kwargs):
+    def wrapper(*args, raw=None, **kwargs):
         results = production_fn(*args, **kwargs)
-        if kwargs.get('raw', None) is True:
+        if raw is True:
             results = json.dumps(results)
         return results
     return wrapper
@@ -27,7 +27,7 @@ class Conductor:
     def api_key(self):
         return self._api_key
 
-    def get_track_circuits(self, **kwargs):
+    def get_track_circuits(self):
         url = 'https://api.wmata.com/TrainPositions/TrackCircuits/'
         response = self._session.get(url, headers=self._headers, params={'contentType': 'json'})
         results = json.loads(response.content)
@@ -42,23 +42,30 @@ class Conductor:
         return tracks
 
     @challenge_function
-    def get_lines(self, **kwargs):
+    def get_lines(self):
         url = 'https://api.wmata.com/Rail.svc/json/jLines'
         response = requests.get(url, headers=self._headers)
         results = (json.loads(response.content))
         return results['Lines']
 
-    def get_stations(self, line_code, **kwargs):
+    def get_stations(self, line_code=None):
         url = 'https://api.wmata.com/Rail.svc/json/jStations'
-        results = requests.get(url, params={'LineCode': line_code}, headers=self._headers)
+        request_args = {'headers': self._headers}
+        if line_code:
+            request_args['params'] = {'LineCode': line_code}
+        results = requests.get(url, **request_args)
         return json.loads(results.content)['Stations']
 
-    def get_station_parking_information(self, station_code, **kwargs):
+    def get_station_lat_longs(self):
+        stations = self.get_stations()
+        return {x['Code']: {'lat': x['Lat'], 'lon': x['Lon']} for x in stations}
+
+    def get_station_parking_information(self, station_code):
         url = 'https://api.wmata.com/Rail.svc/json/jStationParking'
         results = requests.get(url, params={'StationCode': station_code}, headers=self._headers)
         return json.loads(results.content)['StationsParking']
 
-    def get_station_lat_lon(self, **kwargs):
+    def get_station_lat_lon(self):
         pacer = 0
         station_locations = {}
         lines = self.get_lines()
@@ -76,7 +83,7 @@ class Conductor:
                 pacer += 1
         return station_locations
 
-    def get_train_positions(self, **kwargs):
+    def get_train_positions(self):
         url = 'https://api.wmata.com/TrainPositions/TrainPositions/'
         google_homepage = requests.get(url, headers=self._headers, params={'contentType': 'json'})
         results = (json.loads(google_homepage.content))
